@@ -1,5 +1,6 @@
 import math
 from pprint import pprint
+
 def f2str (f):
     return "{:.1f}".format(f)
 def eu_dist(v1, v2):
