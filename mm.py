@@ -1,37 +1,59 @@
 import math
+import csv
+import os
+import numpy as np
 from pprint import pprint
 
-def f2str (f):
-    return "{:.1f}".format(f)
+data_set_root = 'data/'
+window_size   = 10
+
+#matrix_profile
 def eu_dist(v1, v2):
     res = 0
     for i in  range(len(v1)):
         res += (v1[i] - v2[i]) ** 2
     return math.sqrt(res)
-def vector_profile(input, sub_arr):
+
+def vector_min(input_vector, window):
+    min = float("+inf")
+    window_size = len(window)
+    for i in range(len(input_vector)-window_size+1):
+        sub = input_vector[i:i+window_size]
+        res = eu_dist(sub, window)
+        if res < min and res != 0:
+            min = res
+    return min
+
+def distance_matrix(input_vector, window_size):
     res = []
-    ws = len(sub_arr)
-    for i in range(len(input) - ws + 1):
-        v1 = input[i:i+ws]
-        # print(v1)
-        # print(sub_arr)
-        res.append(eu_dist(sub_arr, v1))
+    for i in range(0,len(input_vector)-window_size+1):
+        window = input_vector[i:i+window_size]
+        res.append(vector_min(input_vector, window))
     return res
-def matrix_profile(vec, n):
-    res = [];
-    for i in range(0,len(vec) - n + 1):
-        sub_arr = vec[i:i+n]
-        res.append(vector_profile(vec, sub_arr))
-        # print(sub_arr)
+
+#data processing
+def get_first_column(file):
+    with open(file, "r") as file:
+        reader = csv.reader(file)
+        return [float(row[0]) for row in reader]
+
+def file_processor(file):
+    return distance_matrix(get_first_column(file), window_size)
+
+def make_label(dir,seg):
+    return dir+seg.split(".")[0]
+
+def for_all_files_do(root, func):
+    res = {}
+    for dir in os.listdir(root):
+        so_far = os.path.join(root, dir)
+        for seg in os.listdir(os.path.join(so_far, "p1")):
+            label = make_label(dir, seg)
+            file = os.path.join(so_far, "p1", seg)
+            res[label] = func(file)
     return res
-def minvec(mat):
-    res = []
-    for rows in mat:
-        min = float("inf")
-        for i in rows:
-            if i != 0 and i < min:
-                min = i
-        res.append(min)
-    return res
-#for i in minvec(matrix_profile([0, 1, 3, 2, 9, 1, 14, 15, 1, 2, 2, 10, 7], 4)):
-#    print(f2str(i))
+
+dict = for_all_files_do(data_set_root, file_processor)
+
+def querry(dir, seg):
+    return dict[make_label(dir, seg)]
