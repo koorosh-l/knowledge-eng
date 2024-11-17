@@ -5,6 +5,7 @@ import numpy as np
 from pprint import pprint
 
 data_set_root = 'data/'
+output_dir    = './output.csv'
 window_size   = 10
 
 #matrix_profile
@@ -53,7 +54,14 @@ def for_all_files_do(root, func):
             res[label] = func(file)
     return res
 
-dict = for_all_files_do(data_set_root, file_processor)
+# dict = for_all_files_do(data_set_root, file_processor)
 
 def querry(dir, seg):
     return dict[make_label(dir, seg)]
+
+def save(dict):
+    with open(output_dir, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        for key, value in dict.items():
+            row = [key] + value
+            writer.writerow(row)
